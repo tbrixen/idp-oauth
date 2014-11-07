@@ -1,4 +1,4 @@
 idp-oauth
 =========
 
-My OAuth implementation for the Identity and Privacy couse
+My OAuth implementation for the Identity and Privacy course.
