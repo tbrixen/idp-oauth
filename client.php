@@ -9,13 +9,15 @@
 
 <?php
 
+$clientId = "42";
+$clientSecret = "myveryownsecret";
 
 // Setup action handler
 if (isset($_GET['action'])){
     $action = $_GET['action'];
     switch($action){
         case "authzcode":
-            handleAuthzCode();
+            handleAuthzCode($clientId, $clientSecret);
             break;
         default:
             handleDefault();
@@ -47,13 +49,26 @@ if (isset($_GET['action'])){
 
 <?php
 
-function handleAuthzCode()
+function handleAuthzCode($clientId, $clientSecret)
 {
     // We have now gotten the user to accept our scope, and he has authenticaed himself
     $code = $_GET['code'];
     $scope = $_GET['scope'];
 
     echo $scope . " - " . $code;
+
+
+    // We then need to get the access token so that us, the client, may get the data
+    echo '<script type="text/javascript">
+        window.location = ' . 
+        '"authz.php' . 
+         '?action=authzclient' .
+         '&clientid=' . $clientId . 
+         '&scope=' . $scope . 
+         '&clientsecret=' . $clientSecret . 
+         '&code=' . $code . 
+        '"
+      </script>';
 
 }
 

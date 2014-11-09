@@ -22,6 +22,9 @@ if (isset($_GET['action'])){
         case "redirect":
             handleRedirect();
             break;
+        case "authzclient":
+            handleAuthzClient($_GET['clientid'], $_GET['code'], $_GET['scope'], $_GET['clientsecret']);
+            break;
         default:
             handleDefault();
     }
@@ -109,8 +112,13 @@ function handleCorrectLogin($clientId, $responseType, $scope, $username)
     echo $username;
 
     // Generate authz token
-    // Need to contain a hash of clientID, scope, and username
-    // Use salt as same length of 
+    // Properties of the authztoken:
+    // Its a token to see that the user has authorized the client on some scope
+    // hence, wee need to have:
+    // * The user
+    // * The client
+    // * The scope
+
     $stringToHash = $clientId . $scope . $username;
 
     // TODO: autogererate the salt, and store.
@@ -130,16 +138,15 @@ function handleCorrectLogin($clientId, $responseType, $scope, $username)
       </script>';
 
 
-    // Properties of the authztoken:
-    // It's a token to see that the user has authorized the client on some scope
-    // hence, wee need to have:
-    // * The user
-    // * The client
-    // * The scope
-
 
 }
 
+function handleAuthzClient($clientId, $code, $scope, $clientSecret)
+{
+    echo $clientId . " - " . $code . " - " . $scope . " - " . $clientSecret;
+    
+
+}
 
 function handleDefault()
 {
