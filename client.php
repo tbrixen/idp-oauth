@@ -10,11 +10,12 @@
 <?php
 
 
+// Setup action handler
 if (isset($_GET['action'])){
     $action = $_GET['action'];
     switch($action){
-        case "ab":
-            handleAb();
+        case "authzcode":
+            handleAuthzCode();
             break;
         default:
             handleDefault();
@@ -45,6 +46,16 @@ if (isset($_GET['action'])){
 </html>
 
 <?php
+
+function handleAuthzCode()
+{
+    // We have now gotten the user to accept our scope, and he has authenticaed himself
+    $code = $_GET['code'];
+    $scope = $_GET['scope'];
+
+    echo $scope . " - " . $code;
+
+}
 
 function handleDefault()
 {
