@@ -9,7 +9,7 @@
 
 <?php
 
-$clientId = "42";
+$clientId = "23";
 $clientSecret = "myveryownsecret";
 
 // Setup action handler
@@ -18,6 +18,12 @@ if (isset($_GET['action'])){
     switch($action){
         case "authzcode":
             handleAuthzCode($clientId, $clientSecret);
+            break;
+        case "accesstoken":
+            handleAccessToken();
+            break;
+        case "returninfo":
+            handleReturnInfo();
             break;
         default:
             handleDefault();
@@ -29,11 +35,10 @@ if (isset($_GET['action'])){
         points you\'ll get. Choose between:
 
         <ul>
-        <li><a href="authz.php?action=redirect&clientid=42&responsetype=acg&scope=1">1 point</a>: First name</li>
-        <li><a href="authz.php?action=redirect&clientid=42&responsetype=acg&scope=2">2 points</a>: First and last name</li>
-        <li><a href="authz.php?action=redirect&clientid=42&responsetype=acg&scope=3">3 points</a>: First and last name + birthday</li>
+        <li><a href="authz.php?action=redirect&clientid=23&responsetype=acg&scope=1">1 point</a>: First name</li>
+        <li><a href="authz.php?action=redirect&clientid=23&responsetype=acg&scope=2">2 points</a>: First and last name</li>
+        <li><a href="authz.php?action=redirect&clientid=23&responsetype=acg&scope=3">3 points</a>: First and last name + birthday</li>
         </ul>
-
         
         ';
 
@@ -49,13 +54,24 @@ if (isset($_GET['action'])){
 
 <?php
 
+/**
+ * Ok, know the client has gotten an code that it can use to access a specific
+ * users information. Now to talk to the resource server, we need a access token
+ * from the Authz server
+ */
 function handleAuthzCode($clientId, $clientSecret)
 {
     // We have now gotten the user to accept our scope, and he has authenticaed himself
     $code = $_GET['code'];
     $scope = $_GET['scope'];
+    $toSign = $_GET['tosign'];
 
-    echo $scope . " - " . $code;
+    // We sign the message by encrypting it
+    $key = $clientSecret;
+    $iv =  '1234567890123456';
+    $cc = $toSign;
+    $cipher = mcrypt_module_open(MCRYPT_RIJNDAEL_128,'','cbc','');
+    $signed = encrypt($cipher, $key, $iv, $cc);
 
 
     // We then need to get the access token so that us, the client, may get the data
@@ -64,17 +80,58 @@ function handleAuthzCode($clientId, $clientSecret)
         '"authz.php' . 
          '?action=authzclient' .
          '&clientid=' . $clientId . 
-         '&scope=' . $scope . 
-         '&clientsecret=' . $clientSecret . 
          '&code=' . $code . 
+         '&tosign=' . $toSign . 
+         '&signed=' . $signed . 
         '"
       </script>';
 
 }
 
+/**
+ * We have successfully authenticated ourselvs to the authz server, and have
+ * gotten ourselvs an access token. Now we just need to use this to get the info
+ */
+function handleAccessToken()
+{
+    $token = $_GET['token'];
+
+
+    // Call the resource server to get the info
+    echo '<script type="text/javascript">
+        window.location = ' . 
+        '"resource.php' . 
+         '?action=retreiveinfo' .
+         '&token=' . $token . 
+        '"
+      </script>';
+
+}
+
+function handleReturnInfo()
+{
+    $info = $_GET['info'];
+
+    echo "Thank you for your information. You'll get your points in on your
+        account as soon as we have sold your information<br/>";
+    echo "As a servere, you are hereby presented with the information we are 
+        trying to sell<br />";
+    echo urldecode( $info );
+}
+
+
 function handleDefault()
 {
     echo "<p>Action not defined</p>";
+}
+
+function encrypt($cipher, $key, $iv , $data) {
+
+            mcrypt_generic_init($cipher, $key, $iv);
+            $encrypted = urlencode(base64_encode(mcrypt_generic($cipher,$data)));
+            mcrypt_generic_deinit($cipher);
+
+            return $encrypted;
 }
 
 ?>

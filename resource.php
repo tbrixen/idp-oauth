@@ -11,8 +11,8 @@ $action = $_GET['action'];
 
 if (isset($action)){
     switch($action){
-        case "ab":
-            handleAb();
+        case "retreiveinfo":
+            handleRetreiveInfo();
             break;
         default:
             handleDefault();
@@ -26,10 +26,79 @@ if (isset($action)){
 </body>
 </html>
 <?php
+function handleRetreiveInfo()
+{
+    $token = $_GET['token'];
+
+    // The token is the encryption of the code, hence, to get the info, we
+    // need to decrypt twice
+
+    $key = '73f8d4969098400c44dcb50111eb4193';
+    $iv =  '1234567890123456';
+    $cipher = mcrypt_module_open(MCRYPT_RIJNDAEL_128,'','cbc','');
+
+    $code = decrypt($cipher, $key, $iv, $token);
+
+    $message = decrypt($cipher, $key, $iv, $code);
+
+
+
+    // Check that thet we have valid data is correct
+    $parts = explode(" ", $message);
+    $oauth = $parts[0];
+    $clientId = $parts[1];
+    $scope = $parts[2];
+    $username = $parts[3];
+
+    // If first part is the string oauth, it's decrypted properly.
+    if ($oauth == "oauth"){
+        echo "Token is ok, now here's the information";
+        $info = getInfo($username, $scope);
+
+
+    // Call the resource server to get the info
+    echo '<script type="text/javascript">
+        window.location = ' . 
+        '"client.php' . 
+         '?action=returninfo' .
+         '&info=' . urlencode($info) . 
+        '"
+      </script>';
+
+    }
+}
+
 
 function handleDefault()
 {
     echo "<p>Action not defined</p>";
+}
+
+function decrypt($cipher, $key, $iv , $data) {
+
+            mcrypt_generic_init($cipher, $key, $iv);
+            $decrypted = mdecrypt_generic($cipher,base64_decode(urldecode($data)));
+            mcrypt_generic_deinit($cipher);
+
+            return $decrypted;
+}
+
+
+function getInfo($username, $scope)
+{
+    if (trim($username) == "ole"){
+        switch($scope){
+            case "1":
+                return "Firstname: Ole";
+                break;
+            case "2":
+                return "Firstname: Ole, Lastname: Bole";
+                break;
+            case "3":
+                return "Firstname: Ole, Lastname: Bole, Birthday 24/12-1970";
+                break;
+        }
+    }
 }
 
 ?>
