@@ -75,16 +75,16 @@ function handleAuthzCode($clientId, $clientSecret)
 
 
     // We then need to get the access token so that us, the client, may get the data
-    echo '<script type="text/javascript">
-        window.location = ' . 
+    echo '<a href=' .
         '"authz.php' . 
          '?action=authzclient' .
          '&clientid=' . $clientId . 
-         '&code=' . $code . 
+         '&code=' . urlencode($code) . 
          '&tosign=' . $toSign . 
-         '&signed=' . $signed . 
-        '"
-      </script>';
+         '&signed=' . urlencode($signed) . 
+        '">
+        go to authz with clientId, code, tosign, and signed
+      </a>';
 
 }
 
@@ -98,13 +98,13 @@ function handleAccessToken()
 
 
     // Call the resource server to get the info
-    echo '<script type="text/javascript">
-        window.location = ' . 
+    echo '<a href=' .
         '"resource.php' . 
          '?action=retreiveinfo' .
          '&token=' . $token . 
-        '"
-      </script>';
+         '">
+         goto resource with token
+      </a>';
 
 }
 
@@ -117,6 +117,7 @@ function handleReturnInfo()
     echo "As a servere, you are hereby presented with the information we are 
         trying to sell<br />";
     echo urldecode( $info );
+    echo "<br />Get <a href=index.php>back</a>";
 }
 
 
@@ -128,10 +129,17 @@ function handleDefault()
 function encrypt($cipher, $key, $iv , $data) {
 
             mcrypt_generic_init($cipher, $key, $iv);
-            $encrypted = urlencode(base64_encode(mcrypt_generic($cipher,$data)));
+            $encrypted = base64_url_encode(mcrypt_generic($cipher,$data));
             mcrypt_generic_deinit($cipher);
 
             return $encrypted;
+}
+function base64_url_encode($input) {
+ return strtr(base64_encode($input), '+/=', '-_,');
+}
+
+function base64_url_decode($input) {
+ return base64_decode(strtr($input, '-_,', '+/='));
 }
 
 ?>

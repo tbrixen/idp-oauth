@@ -41,6 +41,9 @@ function handleRetreiveInfo()
 
     $message = decrypt($cipher, $key, $iv, $code);
 
+    echo "token: " . $token;
+    echo "<br />code: " . $code;
+    echo "<br />message: " . $message;
 
 
     // Check that thet we have valid data is correct
@@ -52,18 +55,18 @@ function handleRetreiveInfo()
 
     // If first part is the string oauth, it's decrypted properly.
     if ($oauth == "oauth"){
-        echo "Token is ok, now here's the information";
+        echo "Token is ok";
         $info = getInfo($username, $scope);
 
 
     // Call the resource server to get the info
-    echo '<script type="text/javascript">
-        window.location = ' . 
+    echo '<a href=' .
         '"client.php' . 
          '?action=returninfo' .
          '&info=' . urlencode($info) . 
-        '"
-      </script>';
+        '">
+        Go to client with info
+      </a>';
 
     }
 }
@@ -77,7 +80,7 @@ function handleDefault()
 function decrypt($cipher, $key, $iv , $data) {
 
             mcrypt_generic_init($cipher, $key, $iv);
-            $decrypted = mdecrypt_generic($cipher,base64_decode(urldecode($data)));
+            $decrypted = mdecrypt_generic($cipher,base64_url_decode($data));
             mcrypt_generic_deinit($cipher);
 
             return $decrypted;
@@ -101,4 +104,10 @@ function getInfo($username, $scope)
     }
 }
 
-?>
+function base64_url_encode($input) {
+ return strtr(base64_encode($input), '+/=', '-_,');
+}
+
+function base64_url_decode($input) {
+ return base64_decode(strtr($input, '-_,', '+/='));
+}?>

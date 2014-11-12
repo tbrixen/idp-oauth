@@ -18,9 +18,9 @@ if (isset($_GET['action'])){
         case "authzclient":
             handleAuthzClient(
                 $_GET['clientid'], 
-                $_GET['code'], 
+                urldecode($_GET['code']), 
                 $_GET['tosign'], 
-                $_GET['signed']);
+                urldecode($_GET['signed']));
             break;
         default:
             handleDefault();
@@ -107,6 +107,7 @@ function handleRedirect()
  */
 function handleCorrectUserLogin($clientId, $responseType, $scope, $username)
 {
+    echo "handleCorrectUserLogin <br />";
     echo $clientId;
     echo $responseType;
     echo $scope;
@@ -130,21 +131,23 @@ function handleCorrectUserLogin($clientId, $responseType, $scope, $username)
     $cipher = mcrypt_module_open(MCRYPT_RIJNDAEL_128,'','cbc','');
 
     $encryptedData = encrypt($cipher, $key, $iv, $cc);
-    echo "enc data: " . $encryptedData . "<br />";
+    
+    echo "data to encrypt: " . $cc . "<br />";
+    echo "encrypted data data: " . $encryptedData . "<br />";
 
 
     $dev = decrypt($cipher, $key, $iv, $encryptedData);
-    echo "enc data: " . $dev . "<br />";
+    echo "decrypted encrypted data: " . $dev . "<br />";
     // Redirect the user
-    echo '<script type="text/javascript">
-        window.location = ' . 
+    echo '<a href=' .
         '"client.php' . 
          '?action=authzcode' .
-         '&code=' . $encryptedData . 
+         '&code=' . urlencode($encryptedData) . 
          '&scope=' . $scope . 
-         '&tosign=' . substr( md5(rand()), 0, 32 ) . 
-        '"
-      </script>';
+         '&tosign=' . substr( md5(rand() ), 0, 32 ) . 
+        '">
+        Go to client with code, scope and tosign
+      </a>';
 }
 
 
@@ -192,13 +195,13 @@ function handleAuthzClient($clientId, $code, $toSign, $signed)
         $token = encrypt($cipher, $key, $iv, $code);
 
         // We redirect back to the client
-        echo '<script type="text/javascript">
-            window.location = ' . 
+        echo '<a href=' .
             '"client.php' . 
              '?action=accesstoken' .
              '&token=' . $token . 
-            '"
-          </script>';
+            '">
+            Go to client with the token
+          </a>';
     } else {
         echo "There was an error in either the code or the signing process";
     }
@@ -220,7 +223,7 @@ function printGet()
 function encrypt($cipher, $key, $iv , $data) {
 
             mcrypt_generic_init($cipher, $key, $iv);
-            $encrypted = urlencode(base64_encode(mcrypt_generic($cipher,$data)));
+            $encrypted = base64_url_encode(mcrypt_generic($cipher,$data));
             mcrypt_generic_deinit($cipher);
 
             return $encrypted;
@@ -229,10 +232,16 @@ function encrypt($cipher, $key, $iv , $data) {
 function decrypt($cipher, $key, $iv , $data) {
 
             mcrypt_generic_init($cipher, $key, $iv);
-            $decrypted = mdecrypt_generic($cipher,base64_decode(urldecode($data)));
+            $decrypted = mdecrypt_generic($cipher,base64_url_decode($data));
             mcrypt_generic_deinit($cipher);
 
             return $decrypted;
 }
+function base64_url_encode($input) {
+ return strtr(base64_encode($input), '+/=', '-_,');
+}
 
+function base64_url_decode($input) {
+ return base64_decode(strtr($input, '-_,', '+/='));
+}
 ?>
