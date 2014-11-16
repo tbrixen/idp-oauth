@@ -26,6 +26,7 @@ if (isset($action)){
 </body>
 </html>
 <?php
+
 function handleRetreiveInfo()
 {
     $token = $_GET['token'];
@@ -42,8 +43,8 @@ function handleRetreiveInfo()
     $message = decrypt($cipher, $key, $iv, $code);
 
     echo "token: " . $token;
-    echo "<br />code: " . $code;
-    echo "<br />message: " . $message;
+    echo "<br />Code received: " . $code;
+    echo "<br />Message received: " . $message;
 
 
     // Check that thet we have valid data is correct
@@ -55,7 +56,7 @@ function handleRetreiveInfo()
 
     // If first part is the string oauth, it's decrypted properly.
     if ($oauth == "oauth"){
-        echo "Token is ok";
+        echo "<br />Token is ok<br /><br />";
         $info = getInfo($username, $scope);
 
 

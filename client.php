@@ -112,12 +112,12 @@ function handleReturnInfo()
 {
     $info = $_GET['info'];
 
-    echo "Thank you for your information. You'll get your points in on your
-        account as soon as we have sold your information<br/>";
-    echo "As a servere, you are hereby presented with the information we are 
-        trying to sell<br />";
-    echo urldecode( $info );
-    echo "<br />Get <a href=index.php>back</a>";
+    echo "Thank you for your information. You'll get your points to your
+        account as soon as we have sold your information.<br/>";
+    echo "As a service, you are hereby presented with the information we are 
+        trying to sell:<br /><br />";
+    echo $info;
+    echo "<br /><br />Get <a href=index.php>back</a>";
 }
 
 
