@@ -83,7 +83,7 @@ function handleRedirect()
 
     // The user should now get to authorize 
     echo "Would you like to give <b>" . $clientName . "</b> access to: 
-        <ul> " . $scopeText . "</li><br />";
+        <ul> " . $scopeText . "</ul><br />";
 
     echo "Then please login using the following form:";
     echo '
